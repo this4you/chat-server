@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title></title>
+</head>
+<body>
+<script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
+<script>
+    window.onload = function () {
+        var socket = io("http://localhost:3000");
+        socket.on("SERVER:MESSAGES_READED", (arg) => {
+            console.log("MESSAGES_READED", arg);
+        });
+        socket.on("SERVER:NEW_MESSAGE", (arg) => {
+            console.log("SERVER:NEW_MESSAGE", arg);
+        });
+    }
+</script>
+
+</body>
+</html>
