@@ -12,12 +12,17 @@ export default (http: http.Server) => {
     io.on('connection', function(socket: Socket) {
         console.log("Socket client connected...")
         socket.on('DIALOGS:JOIN', (dialogId: string) => {
-            console.log(dialogId);
-            // socket.dialogId = dialogId;
-            // socket.join(dialogId);
+            // @ts-ignore
+            socket.dialogId = dialogId;
+            socket.join(dialogId);
         });
         socket.on('DIALOGS:TYPING', (obj: any) => {
             socket.broadcast.emit('DIALOGS:TYPING', obj);
+        });
+
+        socket.on('join', (userId: string) => {
+            console.log("User joined!", userId)
+            socket.join(userId);
         });
     });
 

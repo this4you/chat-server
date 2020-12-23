@@ -97,8 +97,10 @@ class MessageController {
                         );
 
                         res.json(message);
-
-                        this.io.emit("SERVER:NEW_MESSAGE", message);
+                        // @ts-ignore
+                        const roomId:string = message && message.dialog.partner.toString();
+                        this.io.to(roomId.trim()).emit('SERVER:NEW_MESSAGE', message);
+                        //this.io.emit("SERVER:NEW_MESSAGE", message);
                     }
                 );
             })

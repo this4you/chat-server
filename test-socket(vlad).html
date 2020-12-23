@@ -12,6 +12,7 @@
 <script>
     window.onload = function () {
         var socket = io("http://localhost:3000");
+        socket.emit('join', "5fdd04bc722a3d12a06ac792");
         socket.on("SERVER:MESSAGES_READED", (arg) => {
             console.log("MESSAGES_READED", arg);
         });

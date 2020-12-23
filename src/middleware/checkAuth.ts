@@ -14,7 +14,6 @@ export default (
     ) {
         return next();
     }
-
     const token: string | null =
         "token" in req.headers ? (req.headers.token as string) : null;
 
