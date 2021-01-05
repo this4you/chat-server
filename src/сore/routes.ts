@@ -3,7 +3,7 @@ import bodyParser from "body-parser";
 import socket from "socket.io";
 import {checkAuth, updateLastSeen} from "../middleware";
 import {DialogController, MessageController, UserController} from "../controllers";
-import {loginValidation} from "../utils/validations";
+import {loginValidation, registerValidation} from "../utils/validations";
 
 export default  (app: express.Express, io: socket.Server) => {
     const User = new UserController(io);
@@ -17,13 +17,14 @@ export default  (app: express.Express, io: socket.Server) => {
 
 
     app.get('/user/me', User.getMe);
+    app.get("/user/verify", User.verify);
     app.get('/user/:id', User.show);
     app.get('/users', User.showAll);
     app.delete('/user/:id', User.delete);
-    app.post("/user/signup", User.create);
+    app.post("/user/signup", registerValidation, User.create);
     app.post("/user/signin", loginValidation, User.auth);
 
-    app.get('/dialog', Dialog.index);
+    app.get('/dialogs', Dialog.index);
     app.post('/dialog/create', Dialog.create);
     app.delete('/dialog/:id', Dialog.delete);
 

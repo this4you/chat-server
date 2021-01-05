@@ -2,6 +2,7 @@ import express from 'express';
 import {MessageModel} from "../models";
 import socket from "socket.io";
 import {DialogModel} from "../models";
+import {IDialog} from "../models/Dialog";
 
 class MessageController {
     io: socket.Server;
@@ -35,8 +36,9 @@ class MessageController {
     };
 
     index = (req: express.Request, res: express.Response): void => {
-        const dialogId: any = req.query.dialog;
-        // @ts-ignore
+        //@ts-ignore
+        const dialogId: string = req.query.dialog;
+        //@ts-ignore
         const userId: string = req.user._id;
 
         this.updateReadStatus(res, userId, dialogId);
@@ -55,7 +57,7 @@ class MessageController {
     };
 
     create = (req: express.Request, res: express.Response): void => {
-        // @ts-ignore
+        //@ts-ignore
         const userId: string = req.user._id;
 
         const postData = {
@@ -97,10 +99,9 @@ class MessageController {
                         );
 
                         res.json(message);
-                        // @ts-ignore
-                        const roomId:string = message && message.dialog.partner.toString();
-                        this.io.to(roomId.trim()).emit('SERVER:NEW_MESSAGE', message);
-                        //this.io.emit("SERVER:NEW_MESSAGE", message);
+                        const dialog: IDialog = <IDialog>message.dialog;
+                        this.io.to(dialog.partner.toString() + "").emit("SERVER:MESSAGE_CREATED", JSON.stringify(message));
+                        this.io.to(dialog.author.toString() + "").emit("SERVER:MESSAGE_CREATED", JSON.stringify(message));
                     }
                 );
             })
@@ -110,8 +111,9 @@ class MessageController {
     };
 
     delete = (req: express.Request, res: express.Response): void => {
-        const id: any = req.query.id;
-        // @ts-ignore
+        //@ts-ignore
+        const id: string = req.query.id;
+        //@ts-ignore
         const userId: string = req.user._id;
 
         MessageModel.findById(id, (err, message: any) => {

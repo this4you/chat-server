@@ -4,26 +4,17 @@ import socket from "socket.io";
 
 class DialogController {
     io: socket.Server;
+
     constructor(io: socket.Server) {
         this.io = io;
     }
 
-    show(req: express.Request, res: express.Response) {
-        const id = req.params.id;
-        DialogModel.findById(id, (err, dialog) => {
-            if (err || dialog === null) {
-                return res.status(404).json({
-                    message: "Not Found"
-                });
-            }
-            res.json(dialog);
-        });
-    }
-    index(req: any, res: express.Response) {
+    index = (req: express.Request, res: express.Response): void => {
+        //@ts-ignore
         const userId = req.user._id;
-        DialogModel
-            .find()
-            .or([{ author: userId }, { partner: userId }])
+
+        DialogModel.find()
+            .or([{author: userId}, {partner: userId}])
             .populate(['author', 'partner'])
             .populate({
                 path: 'lastMessage',
@@ -31,51 +22,99 @@ class DialogController {
                     path: 'user',
                 },
             })
-            .populate('author')
-            .exec((err, dialogs) => {
+            .exec(function (err, dialogs) {
                 if (err) {
                     return res.status(404).json({
-                        message: "Not Found"
+                        message: 'Dialogs not found',
                     });
                 }
-                res.json(dialogs);
+                return res.json(dialogs);
             });
-    }
-    create(req: express.Request, res: express.Response) {
-        const dialogData = {
-            author: req.body.author,
-            partner: req.body.partner
-        };
-        const dialog = new DialogModel(dialogData);
-        dialog.save()
-            .then((dialog: any) => {
-                const message = new MessageModel({
-                    text: req.body.text,
-                    user: req.body.author,
-                    dialog: dialog._id
-                });
-                message.save().then((obj:any) => {
-                    res.json( dialog);
-                });
-            })
-            .catch(err => {
-                res.json(err);
-            });
-    }
+    };
 
-    delete(req: express.Request, res: express.Response) {
-        const id = req.params.id;
-        DialogModel.findByIdAndRemove(id, (err, dialog) => {
-            if (err || dialog === null) {
-                return res.status(404).json({
-                    message: "Not Found"
+    create = (req: express.Request, res: express.Response): void => {
+        const postData = {
+            //@ts-ignore
+            author: req.user._id,
+            partner: req.body.partner,
+        };
+
+        DialogModel.findOne(
+            {
+                //@ts-ignore
+                author: req.user._id,
+                partner: req.body.partner,
+            },
+            (err, dialog) => {
+                if (err) {
+                    return res.status(500).json({
+                        status: 'error',
+                        message: err,
+                    });
+                }
+                if (dialog) {
+                    return res.status(403).json({
+                        status: 'error',
+                        message: 'Такой диалог уже есть',
+                    });
+                } else {
+                    const dialog = new DialogModel(postData);
+
+                    dialog
+                        .save()
+                        .then((dialogObj) => {
+                            const message = new MessageModel({
+                                text: req.body.text,
+                                //@ts-ignore
+                                user: req.user._id,
+                                dialog: dialogObj._id,
+                            });
+
+                            message
+                                .save()
+                                .then(() => {
+                                    dialogObj.lastMessage = message._id;
+                                    dialogObj.save().then(() => {
+                                        res.json(dialogObj);
+                                        this.io.to(dialogObj.partner.toString() + "").emit("SERVER:DIALOG_CREATED");
+                                        this.io.to(dialogObj.author.toString() + "").emit("SERVER:DIALOG_CREATED");
+                                        // this.io.emit('SERVER:DIALOG_CREATED', {
+                                        //     ...postData,
+                                        //     dialog: dialogObj,
+                                        // });
+                                    });
+                                })
+                                .catch((reason) => {
+                                    res.json(reason);
+                                });
+                        })
+                        .catch((err) => {
+                            res.json({
+                                status: 'error',
+                                message: err,
+                            });
+                        });
+                }
+            },
+        );
+    };
+
+    delete = (req: express.Request, res: express.Response): void => {
+        const id: string = req.params.id;
+        DialogModel.findOneAndRemove({_id: id})
+            .then((dialog) => {
+                if (dialog) {
+                    res.json({
+                        message: `Dialog deleted`,
+                    });
+                }
+            })
+            .catch(() => {
+                res.json({
+                    message: `Dialog not found`,
                 });
-            }
-            res.json({
-                message: `Dialog deleted`
             });
-        });
-    }
+    };
 }
 
 export default DialogController;
