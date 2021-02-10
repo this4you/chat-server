@@ -17,8 +17,8 @@ class MessageController {
         dialogId: string
     ): void => {
         MessageModel.updateMany(
-            { dialog: dialogId, user: { $ne: userId } },
-            { $set: { read: true } },
+            {dialog: dialogId, user: {$ne: userId}},
+            {$set: {read: true}},
             (err: any): void => {
                 if (err) {
                     res.status(500).json({
@@ -43,7 +43,7 @@ class MessageController {
 
         this.updateReadStatus(res, userId, dialogId);
 
-        MessageModel.find({ dialog: dialogId })
+        MessageModel.find({dialog: dialogId})
             .populate(["dialog", "user", "attachments"])
             .exec(function (err, messages) {
                 if (err) {
@@ -85,9 +85,9 @@ class MessageController {
                         }
 
                         DialogModel.findOneAndUpdate(
-                            { _id: postData.dialog },
-                            { lastMessage: message._id },
-                            { upsert: true },
+                            {_id: postData.dialog},
+                            {lastMessage: message._id},
+                            {upsert: true},
                             function (err) {
                                 if (err) {
                                     return res.status(500).json({
@@ -102,6 +102,8 @@ class MessageController {
                         const dialog: IDialog = <IDialog>message.dialog;
                         this.io.to(dialog.partner.toString() + "").emit("SERVER:MESSAGE_CREATED", JSON.stringify(message));
                         this.io.to(dialog.author.toString() + "").emit("SERVER:MESSAGE_CREATED", JSON.stringify(message));
+                        this.io.to(dialog.partner.toString() + "").emit("SERVER:MESSAGE_NEW", JSON.stringify(message));
+                        this.io.to(dialog.author.toString() + "").emit("SERVER:MESSAGE_NEW", JSON.stringify(message));
                     }
                 );
             })
@@ -127,11 +129,10 @@ class MessageController {
             if (message.user.toString() === userId) {
                 const dialogId = message.dialog;
                 message.remove();
-
                 MessageModel.findOne(
-                    { dialog: dialogId },
+                    {dialog: dialogId},
                     {},
-                    { sort: { created_at: -1 } },
+                    {sort: {createdAt: -1}},
                     (err, lastMessage) => {
                         if (err) {
                             res.status(500).json({
@@ -139,7 +140,6 @@ class MessageController {
                                 message: err,
                             });
                         }
-
                         DialogModel.findById(dialogId, (err, dialog) => {
                             if (err) {
                                 res.status(500).json({
@@ -155,7 +155,7 @@ class MessageController {
                                 });
                             }
 
-                            dialog.lastMessage = lastMessage ? lastMessage.toString() : "";
+                            dialog.lastMessage = lastMessage ? lastMessage._id : "";
                             dialog.save();
                         });
                     }

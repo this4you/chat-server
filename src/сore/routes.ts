@@ -17,6 +17,7 @@ export default  (app: express.Express, io: socket.Server) => {
 
 
     app.get('/user/me', User.getMe);
+    app.get("/user/find", User.findUsers);
     app.get("/user/verify", User.verify);
     app.get('/user/:id', User.show);
     app.get('/users', User.showAll);
@@ -25,10 +26,10 @@ export default  (app: express.Express, io: socket.Server) => {
     app.post("/user/signin", loginValidation, User.auth);
 
     app.get('/dialogs', Dialog.index);
-    app.post('/dialog/create', Dialog.create);
+    app.post('/dialogs', Dialog.create);
     app.delete('/dialog/:id', Dialog.delete);
 
     app.get('/messages', Message.index);
     app.post('/messages', Message.create);
-    app.delete('/messages/:id', Message.delete);
+    app.delete('/messages', Message.delete);
 }

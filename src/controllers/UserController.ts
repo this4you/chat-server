@@ -3,6 +3,8 @@ import {UserModel} from "../models";
 import {createJWToken} from "../utils";
 import {validationResult, Result, ValidationError} from "express-validator";
 import bcrypt from 'bcrypt';
+import mailer from '../сore/mailer';
+import { SentMessageInfo } from "nodemailer/lib/sendmail-transport";
 import socket from "socket.io";
 
 class UserController {
@@ -62,6 +64,21 @@ class UserController {
                 .save()
                 .then((obj: any) => {
                     res.json(obj);
+                    mailer.sendMail(
+                        {
+                            from: "admin@test.com",
+                            to: userData.email,
+                            subject: "Подтверждение почты React Chat Tutorial",
+                            html: `Для того, чтобы подтвердить почту, перейдите <a href="http://localhost:3000/signup/verify?hash=${obj.confirm_hash}">по этой ссылке</a>`,
+                        },
+                        function (err: Error | null, info: SentMessageInfo) {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                console.log(info);
+                            }
+                        }
+                    );
                 })
                 .catch(err => {
                     res.json(err);
@@ -107,7 +124,7 @@ class UserController {
                         token,
                     });
                 } else {
-                    res.status(403).json({
+                    res.status(200).json({
                         status: "error",
                         message: "Incorrect password or email",
                     });
@@ -115,6 +132,24 @@ class UserController {
             });
         }
     }
+
+    findUsers = (req: express.Request, res: express.Response): void => {
+        //@ts-ignore
+        const query: string = req.query.query;
+        console.log(query);
+        UserModel.find()
+            .or([
+                { fullName: new RegExp(query, "i") },
+                { email: new RegExp(query, "i") },
+            ])
+            .then((users) => res.json(users))
+            .catch((err: any) => {
+                return res.status(404).json({
+                    status: "error",
+                    message: err,
+                });
+            });
+    };
 
     verify(req: express.Request, res: express.Response) {
         //@ts-ignore

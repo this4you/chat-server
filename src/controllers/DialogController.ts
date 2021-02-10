@@ -76,6 +76,9 @@ class DialogController {
                                     dialogObj.lastMessage = message._id;
                                     dialogObj.save().then(() => {
                                         res.json(dialogObj);
+                                        console.log(dialogObj);
+                                        console.log(dialogObj.partner.toString());
+                                        console.log(dialogObj.author.toString());
                                         this.io.to(dialogObj.partner.toString() + "").emit("SERVER:DIALOG_CREATED");
                                         this.io.to(dialogObj.author.toString() + "").emit("SERVER:DIALOG_CREATED");
                                         // this.io.emit('SERVER:DIALOG_CREATED', {
@@ -98,6 +101,7 @@ class DialogController {
             },
         );
     };
+
 
     delete = (req: express.Request, res: express.Response): void => {
         const id: string = req.params.id;
