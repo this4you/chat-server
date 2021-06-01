@@ -68,8 +68,8 @@ class UserController {
                         {
                             from: "admin@test.com",
                             to: userData.email,
-                            subject: "Подтверждение почты React Chat Tutorial",
-                            html: `Для того, чтобы подтвердить почту, перейдите <a href="http://localhost:3000/signup/verify?hash=${obj.confirm_hash}">по этой ссылке</a>`,
+                            subject: "Підтвердження пошти",
+                            html: `Для того, щоб підтвердити пошту необхідно перейти <a href="http://localhost:3000/signup/verify?hash=${obj.confirm_hash}">по цьому посиланню</a>`,
                         },
                         function (err: Error | null, info: SentMessageInfo) {
                             if (err) {
@@ -117,6 +117,12 @@ class UserController {
                     });
                 }
 
+                // if (!user.confirmed) {
+                //     return res.status(200).json({
+                //         status: "confirm"
+                //     });
+                // }
+
                 if (bcrypt.compareSync(postData.password, user.password as string)) {
                     const token = createJWToken(user);
                     res.json({
@@ -142,7 +148,11 @@ class UserController {
                 { fullName: new RegExp(query, "i") },
                 { email: new RegExp(query, "i") },
             ])
-            .then((users) => res.json(users))
+            .then((users) => {
+                //@ts-ignore
+                users = users && users.filter(item => item._id != req.user._id) || [];
+                res.json(users)
+            })
             .catch((err: any) => {
                 return res.status(404).json({
                     status: "error",

@@ -14,5 +14,5 @@ app.use(logger);
 createRoutes(app, io);
 
 http.listen(3003, () => {
-    console.log("Server start!");
+    console.log("Server start ...");
 });

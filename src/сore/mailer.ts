@@ -3,8 +3,8 @@ import nodemailer from 'nodemailer';
 const options = {
     service: 'gmail',
     auth: {
-        user: "",
-        pass: ""
+        user: "mertvichenko1@gmail.com",
+        pass: "niaagffnywkzmzby"
     }
 };
 

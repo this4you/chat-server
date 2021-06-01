@@ -5,7 +5,7 @@ import {IDialog} from "./Dialog";
 
 export interface IMessage extends Document{
     text: string;
-    unRead: boolean;
+    read: boolean;
     user: IUser | string;
     dialog: IDialog | string;
 }
@@ -24,7 +24,7 @@ const MessageSchema = new Schema({
         require: true,
         type: String
     },
-    unRead: {
+    read: {
         type: Boolean,
         default: false
     }

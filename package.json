@@ -42,6 +42,7 @@
     "validator": "^13.5.2"
   },
   "devDependencies": {
+    "express-swagger-generator": "^1.1.17",
     "nodemon": "^2.0.6"
   }
 }
